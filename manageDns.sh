@@ -3,14 +3,51 @@
 #######  INCLUDE  ########
 ##########################
 ## Variables Definition ##
+#Here go your bind path "/etc/bind/" ?
 bindPath=''
-zoneDefPath=''
+#Here go your zone files definitions
+zoneDefPath="${bindPath}zoneFiles/"
 namedConf='named.conf.'
+#Here go your web server address IP
 srvIP=''
-primDns='.'
-secDns='.'
+#Here go your primary Dns srv
+primDns=''
+#Here go your secondary Dns srv
+secDns=''
 
-## Functiona definitiona ##
+# Bold Color for general case #
+DEFAULT="\e[0m"
+WHITE="\e[1;97m"
+GREEN="\e[1;32m"
+LGREEN="\e[1;92m"
+RED="\e[1;31m"
+LRED="\e[1;91m"
+MAGENTA="\e[1;35m"
+LMAGENTA="\e[1;95m"
+BLUE="\e[1;34m"
+LBLUE="\e[1;94m"
+YELLOW="\e[1;33m"
+LYELLOW="\e[1;93m"
+CYAN="\e[1;36m"
+LCYAN="\e[1;96m"
+
+# Bold Color for READ -p case #
+RDEFAULT=$'\E[0m'
+RWHITE=$'\E[1;97m'
+RGREEN=$'\E[1;32m'
+RLGREEN=$'\E[1;92m'
+RRED=$'\E[1;31m'
+RLRED=$'\E[1;91m'
+RMAGENTA=$'\E[1;35m'
+RLMAGENTA=$'\E[1;95m'
+RBLUE=$'\E[1;34m'
+RLBLUE=$'\E[1;94m'
+RYELLOW=$'\E[1;33m'
+RLYELLOW=$'\E[1;93m'
+RCYAN=$'\E[1;36m'
+RLCYAN=$'\E[1;96m'
+
+## Functions definitions ##
 # List all the existing zone declaration files #
 listExistingDecFiles()
 {
@@ -25,26 +62,26 @@ listExistingDecFiles()
 # Get the zone declaration file to modify #
 getFileName()
 {
-    read -p 'Enter file name wth [named.conf.]: ' zoneName
+    read -p "${RWHITE}Enter file name ${RRED}without \"named.conf.\"${RDEFAULT}: " zoneName
     fileZonePath=${bindPath}${namedConf}${zoneName}
-    read -p "Filename choosen : $fileZonePath. Are you sure ? [yes|no] : " answFilePath
+    read -p "${RWHITE}Filename choosen : ${RLRED}$fileZonePath. ${RWHITE}Are you sure ? [yes|no] : ${RDEFAULT}" answFilePath
 
     case $answFilePath in
 	'yes'|'y'|'Y'|'Yes'|'')
-	    echo 'good!'
+	    echo -e "${CYAN}good!${DEFAULT}"
 	    ;;
 	'no')
 	    getFileName
 	    ;;
 	*)
-	    echo 'you have put a wrong answer'
+	    echo -e "${RED}you have put a wrong answer!${DEFAULT}"
 	    getFileName
 	    ;;
     esac
 
     ## Check if the domain exists ##
     if [[ ! -f $fileZonePath ]]; then
-	echo "File : $fileZonePath not found!";
+	echo -e "${RED}File : $fileZonePath not found!${DEFAULT}";
 	getFileName
     fi
 }
@@ -53,7 +90,7 @@ getFileName()
 # Create the corresponding zone definition file #
 addZone()
 {
-    echo 'List of existing zones def files :'
+    echo -e "${WHITE}List of existing zones def files :${DEFAULT}"
     listExistingDecFiles
     getFileName
     
@@ -67,13 +104,15 @@ addZone()
     ## Create zone Definition file ##
     createZoneDef
 
-    echo "Zone added in $fileZonePath and definition file created!!!"
+    echo -e "${CYAN}Zone added in ${RED}$fileZonePath${CYAN} and definition file created!!!${DEFAULT}"
 }
 
 # Create a zone declaration file and put a zone in it plus #
 # Create the corresponding zone definition file #
 createZoneDec()
 {
+    echo -e "${WHITE}Creating declaration file...${DEFAULT}"
+
     dnameWthExt=$(echo $dname | cut -d '.' -f1)
     newFileZonePath=${bindPath}${namedConf}${dnameWthExt}
 
@@ -81,32 +120,29 @@ createZoneDec()
     chown bind:bind $newFileZonePath
     
     ## insert zone declaration in the new file ##
-    echo $zoneContent >> $newFileZonePath
+    echo $zoneContent > $newFileZonePath
     
     ## Split inserted line to look more beautifull ##
     sed -i -e "/zone \"$dname\"/s/ { / {\n\t/g;/master; file/s/; /;\n\t/g" $newFileZonePath
-	    
-    ## Create zone Definition file ##
-    createZoneDef
 
-    echo 'Definition and Declaration files created!!!'
+    echo -e "${CYAN}Declaration file created!!!${DEFAULT}"
 }
 
 # Get the domain name #
 domainName()
 {
-    read -p 'Enter a domain name : ' dname;
-    read -p "Your entered : $dname is that correct ? [yes|no] : " answ;
+    read -p "Enter a domain name : " dname;
+    read -p "Your entered : ${RRED}$dname${RWHITE} is that correct ? [yes|no] : " answ;
 
     case $answ in
 	'yes'|'y'|'Y'|'Yes'|'')
-	    echo 'good!'
+	    echo -e "${CYAN}good!${DEFAULT}"
 	    ;;
 	'no')
 	    domainName
 	    ;;
 	*)
-	    echo 'you have put a wrong answer'
+	    echo -e "${RED}you have put a wrong answer${DEFAULT}"
 	    domainName
 	    ;;
     esac
@@ -118,18 +154,18 @@ domainName()
 ## Get the sub domain name
 subDomainName()
 {
-    read -p 'Enter the sub domain name you want to add : ' subDName
-    read -p "Your entered : $subDName is that correct ? [yes|no] : " answ;
+    read -p "${RWHITE}Enter the sub domain name you want to add : " subDName
+    read -p "Your entered : ${RRED}$subDName${RWHITE} is that correct ? [yes|no] : ${RDEFAULT}" answ;
 
     case $answ in
 	'yes'|'y'|'Y'|'Yes'|'')
-	    echo 'good!'
+	    echo -e "${CYAN}good!${DEFAULT}"
 	    ;;
 	'no')
 	    subDomainName
 	    ;;
 	*)
-	    echo 'you have put a wrong answer'
+	    echo -e "${RED}you have put a wrong answer${DEFAULT}"
 	    subDomainName
 	    ;;
     esac
@@ -145,21 +181,21 @@ createZoneDef()
     touch $zoneDefFile
     
     # Question to configure zone file #
-    echo "Configuration of the zone $zoneDefFile :"
-    read -p 'Enter a ttl : ' -e -i 86400 ttl
-    read -p 'Enter a hostmaster address : ' -e -i "hostmaster.${dname}." hostmaster
-    read -p 'Enter a serial : ' -e -i "${defaultSerial}00" serial
-    read -p 'Enter a refresh frequency : ' -e -i 21600 refresh
-    read -p 'Enter a retry frequency : ' -e -i 3600 retry
-    read -p 'Enter an expire delay : ' -e -i 604800 expire
-    read -p 'Enter a minimum : ' -e -i 86400 minimum
-    read -p 'Enter the primary DNS srv : ' -e -i $primDns primaryDns
-    read -p 'Enter the secondary DNS srv : ' -e -i $secDns secondaryDns
-    read -p 'Enter the mail srv : ' -e -i "mail.${dname}." mailSrv
-    read -p 'Enter the priority for the mail srv : ' -e -i 10 priority
-    read -p 'Enter the IP address for the main A field : ' -e -i $srvIP IPAddress
+    echo -e "${WHITE}Configuration of the zone : ${CYAN}$zoneDefFile${WHITE} :${DEFAULT}"
+    read -p "${RWHITE}Enter a ${RCYAN}ttl${RWHITE} : " -e -i 86400 ttl
+    read -p "Enter a ${RCYAN}hostmaster address${RWHITE} : " -e -i "hostmaster.${dname}." hostmaster
+    read -p "Enter a ${RCYAN}serial${RWHITE} : " -e -i "${defaultSerial}00" serial
+    read -p "Enter a ${RCYAN}refresh frequency${RWHITE} : " -e -i 21600 refresh
+    read -p "Enter a ${RCYAN}retry frequency${RWHITE} : " -e -i 3600 retry
+    read -p "Enter an ${RCYAN}expire delay${RWHITE} : " -e -i 604800 expire
+    read -p "Enter a ${RCYAN}minimum${RWHITE} : " -e -i 86400 minimum
+    read -p "Enter the ${RCYAN}primary DNS srv${RWHITE} : " -e -i $primDns primaryDns
+    read -p "Enter the ${RCYAN}secondary DNS srv${RWHITE} : " -e -i $secDns secondaryDns
+    read -p "Enter the ${RCYAN}mail srv${RWHITE} : " -e -i "mail.${dname}." mailSrv
+    read -p "Enter ${RCYAN}priority for the mail srv${RWHITE} : " -e -i 10 priority
+    read -p "Enter the ${RCYAN}IP address for the main A field${RWHITE} : " -e -i $srvIP IPAddress
 
-    echo 'Compiling all the informations...'
+    echo -e "${WHITE}Compiling all the informations...${DEFAULT}"
     # Cause it's mor funny like this :) #
     sleep 1
     
@@ -186,6 +222,8 @@ createZoneDef()
 
     # Change user and group of the zone def file #
     chown bind:bind $zoneDefFile
+
+    echo -e "${CYAN}Zone definition file successfully created!!${DEFAULT}"
 }
 
 ## Add a sub domain to an existing zone definition ##
@@ -196,7 +234,7 @@ addSubDomain()
 
     ## Check if zoneDefFile exists ##
     if [[ ! -f $zoneDefFile ]]; then
-	echo "File : $zoneDefFile not found!";
+	echo -e "${RED}File : $zoneDefFile not found!${DEFAULT}";
 	domainName;
 	addSubDomain;
     fi
@@ -215,16 +253,18 @@ addSubDomain()
 
     ## Replace new serial in zone def file ##
     sed -i "s/${sValue}/\t\t\t${newSValue}/g" $zoneDefFile
+
+    echo -e "${CYAN}Sub domain successfully created!!${DEFAULT}"
 }
 
 # Main script menu #
 mainMenu()
 {
-    echo 'This script allow you to manage domain and zone files'
-    echo '[1] - Add new zone to an existing zone file'
-    echo '[2] - Add new zone with new zone file'
-    echo '[3] - Add sub domain to an existing zone'
-    read -p 'What is your choice? [1|2|3] : ' mainChoice
+    echo -e "${WHITE}This script allow you to manage domain and zone files"
+    echo -e "${CYAN}[1] ${RED}-${DEFAULT} ${WHITE}Add new zone to an existing zone file${DEFAULT}"
+    echo -e "${CYAN}[2] ${RED}-${DEFAULT} ${WHITE}Add new zone with new zone file${DEFAULT}"
+    echo -e "${CYAN}[3] ${RED}-${DEFAULT} ${WHITE}Add sub domain to an existing zone${DEFAULT}"
+    read -p "${RWHITE}What is your choice ? ${RCYAN}[1${RRED}|${RCYAN}2${RRED}|${RCYAN}3]${RWHITE} : " mainChoice
 
     domainName
 
@@ -243,12 +283,14 @@ mainMenu()
 	    ;;
 	'2')
 	    createZoneDec
+	    createZoneDef
 	    ;;
 	'3')
 	    addSubDomain
 	    ;;
 	*)
-	    echo 'nothing'
+	    echo "${WHITE}Bad argument! Retry${DEFAULT}"
+	    mainMenu
 	    ;;
     esac
 }
@@ -258,7 +300,7 @@ mainMenu()
 #############################
 ## Check privileges ##
 if [ "$(whoami)" != "root" ]; then
-    echo "You don't have sufficient privilege to run this script."
+    echo "${RED}You don't have sufficient privilege to run this script.${DEFAULT}"
     exit 1
 fi
 
