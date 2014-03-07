@@ -3,17 +3,12 @@
 #######  INCLUDE  ########
 ##########################
 ## Variables Definition ##
-#Here go your bind path "/etc/bind/" ?
-bindPath=''
-#Here go your zone files definitions
-zoneDefPath="${bindPath}zoneFiles/"
+bindPath='' # Zone Declaration path file
+zoneDefPath='' # Zone Definition path file
 namedConf='named.conf.'
-#Here go your web server address IP
-srvIP=''
-#Here go your primary Dns srv
-primDns=''
-#Here go your secondary Dns srv
-secDns=''
+srvIP='' # Main address IP for A field
+primDns='' # Primary DNS server
+secDns='' # Secondary DNS server
 
 # Bold Color for general case #
 DEFAULT="\e[0m"
@@ -47,7 +42,7 @@ RLYELLOW=$'\E[1;93m'
 RCYAN=$'\E[1;36m'
 RLCYAN=$'\E[1;96m'
 
-## Functions definitions ##
+## Functiona definitiona ##
 # List all the existing zone declaration files #
 listExistingDecFiles()
 {
@@ -59,38 +54,54 @@ listExistingDecFiles()
     done
 }
 
+# List existing files in a directory #
+# Take a path in parameter	     #
+listExistingFiles()
+{
+    for file in ${1}*
+    do
+	if [[ -f $file ]]; then
+	    echo ${file#${1}};
+	fi
+    done
+}
+
 # Get the zone declaration file to modify #
 getFileName()
 {
-    read -p "${RWHITE}Enter file name ${RRED}without \"named.conf.\"${RDEFAULT}: " zoneName
-    fileZonePath=${bindPath}${namedConf}${zoneName}
-    read -p "${RWHITE}Filename choosen : ${RLRED}$fileZonePath. ${RWHITE}Are you sure ? [yes|no] : ${RDEFAULT}" answFilePath
+    flag=0
 
-    case $answFilePath in
-	'yes'|'y'|'Y'|'Yes'|'')
-	    echo -e "${CYAN}good!${DEFAULT}"
-	    ;;
-	'no')
-	    getFileName
-	    ;;
-	*)
-	    echo -e "${RED}you have put a wrong answer!${DEFAULT}"
-	    getFileName
-	    ;;
-    esac
+    while [ $flag -eq 0 ]
+    do
+	read -p "${RWHITE}Enter file name ${RRED}without \"named.conf.\": ${RWHITE}" zoneName
+	fileZonePath=${bindPath}${namedConf}${zoneName}
+	read -p "${RWHITE}Filename choosen : ${RLRED}${fileZonePath}. ${RWHITE}Are you sure ? [Y|N] : " answFilePath
 
-    ## Check if the domain exists ##
-    if [[ ! -f $fileZonePath ]]; then
-	echo -e "${RED}File : $fileZonePath not found!${DEFAULT}";
-	getFileName
-    fi
+	case $answFilePath in
+	    'y'|'Y'|'')
+		## Check if the domain exists ##
+		if [[ -f $fileZonePath ]]; then
+		    flag=1
+		    echo -e "${CYAN}good!${DEFAULT}"
+		else
+		    echo -e "${RED}File : $fileZonePath not found!${DEFAULT}";
+		fi
+		;;
+	    'n'|'N')
+		echo -e "${BLUE}Lets retry another time!${DEFAULT}"
+		;;
+	    *)
+		echo -e "${RED}You have put nothing interesting!${DEFAULT}"
+		;;
+	esac
+    done
 }
 
 # Add a zone in an existing zone declaration file and #
 # Create the corresponding zone definition file #
 addZone()
 {
-    echo -e "${WHITE}List of existing zones def files :${DEFAULT}"
+    echo -e "${WHITE}List of existing zones def files :"
     listExistingDecFiles
     getFileName
     
@@ -131,44 +142,65 @@ createZoneDec()
 # Get the domain name #
 domainName()
 {
-    read -p "Enter a domain name : " dname;
-    read -p "Your entered : ${RRED}$dname${RWHITE} is that correct ? [yes|no] : " answ;
+    flag=0
 
-    case $answ in
-	'yes'|'y'|'Y'|'Yes'|'')
-	    echo -e "${CYAN}good!${DEFAULT}"
-	    ;;
-	'no')
-	    domainName
-	    ;;
-	*)
-	    echo -e "${RED}you have put a wrong answer${DEFAULT}"
-	    domainName
-	    ;;
-    esac
+    while [ $flag -eq 0 ]
+    do
+	read -p "${RWHITE}Enter a domain name : " dname;
+	read -p "Your entered : ${RRED}$dname${RWHITE} is that correct ? [Y|N] : " answ;
+
+	case $answ in
+	    'y'|'Y'|'')
+		flag=1
+		echo -e "${CYAN}good!${DEFAULT}"
+		;;
+	    'n'|'N')
+		echo -e "${BLUE}Lets retry another time!${DEFAULT}"
+		;;
+	    *)
+		echo -e "${RED}You have put nothing interesting!${DEFAULT}"
+		;;
+	esac
+    done
 
     ## Set zone definition path ##
     zoneDefFile=${bindPath}zoneFiles/${dname}.hosts
+
+    ## Define the zone information ##
+    zoneContent="zone \"$dname\" {
+    type master;
+    file \"${bindPath}zoneFile/$dname.hosts\";
+    notify-source 212.83.137.218;
+    allow-transfer {91.121.173.158;};
+    notify yes;
+    };"
+
+    flag=0
 }
 
 ## Get the sub domain name
 subDomainName()
 {
-    read -p "${RWHITE}Enter the sub domain name you want to add : " subDName
-    read -p "Your entered : ${RRED}$subDName${RWHITE} is that correct ? [yes|no] : ${RDEFAULT}" answ;
+    flag=0
 
-    case $answ in
-	'yes'|'y'|'Y'|'Yes'|'')
-	    echo -e "${CYAN}good!${DEFAULT}"
-	    ;;
-	'no')
-	    subDomainName
-	    ;;
-	*)
-	    echo -e "${RED}you have put a wrong answer${DEFAULT}"
-	    subDomainName
-	    ;;
-    esac
+    while [ $flag -eq 0 ]
+    do
+	read -p "${RWHITE}Enter the sub domain name you want to add : " subDName
+	read -p "Your entered : ${RRED}$subDName${RWHITE} is that correct ? [Y|N] : ${RDEFAULT}" answ;
+
+	case $answ in
+	    'y'|'Y'|'')
+		flag=1
+		echo -e "${CYAN}good!${DEFAULT}"
+		;;
+	    'n'|'N')
+		echo -e "${BLUE}Lets retry another time!${DEFAULT}"
+		;;
+	    *)
+		echo -e "${RED}You have put nothing interesting!${DEFAULT}"
+		;;
+	esac
+    done
 }
 
 
@@ -257,42 +289,68 @@ addSubDomain()
     echo -e "${CYAN}Sub domain successfully created!!${DEFAULT}"
 }
 
+## Simple Quit or Continue function ##
+quitOrContinue()
+{
+    read -p "${RBLUE}Do other things ${RCYAN}[O]${RBLUE}? or quit ${RCYAN}[Q]${RWHITE}?" other
+
+    case $other in
+	'o'|'O')
+	    echo 'Ok continue!'
+	    flag=0
+	    ;;
+	'q'|'Q')
+	    echo 'Bye bye!'
+	    flag=1
+	    ;;
+    esac
+}
+
 # Main script menu #
 mainMenu()
 {
-    echo -e "${WHITE}This script allow you to manage domain and zone files"
-    echo -e "${CYAN}[1] ${RED}-${DEFAULT} ${WHITE}Add new zone to an existing zone file${DEFAULT}"
-    echo -e "${CYAN}[2] ${RED}-${DEFAULT} ${WHITE}Add new zone with new zone file${DEFAULT}"
-    echo -e "${CYAN}[3] ${RED}-${DEFAULT} ${WHITE}Add sub domain to an existing zone${DEFAULT}"
-    read -p "${RWHITE}What is your choice ? ${RCYAN}[1${RRED}|${RCYAN}2${RRED}|${RCYAN}3]${RWHITE} : " mainChoice
+    flag=0
 
-    domainName
+    while [ $flag -eq 0 ]
+    do
+	echo -e "${WHITE}This script allow you to manage domain and zone files"
+	echo -e "${CYAN}[1] ${RED}-${DEFAULT} ${WHITE}Add new zone to an existing zone file${DEFAULT}"
+	echo -e "${CYAN}[2] ${RED}-${DEFAULT} ${WHITE}Add new zone with new zone file${DEFAULT}"
+	echo -e "${CYAN}[3] ${RED}-${DEFAULT} ${WHITE}Add sub domain to an existing zone${DEFAULT}"
+	echo -e "${CYAN}[4] ${RED}-${DEFAULT} ${WHITE}List existing zone ${YELLOW}DECLARATION${WHITE} files${DEFAULT}"
+	echo -e "${CYAN}[5] ${RED}-${DEFAULT} ${WHITE}List existing zone ${YELLOW}DEFINITION${WHITE} files${DEFAULT}"
+	read -p "${RBLUE}What is your choice ? ${RCYAN}[1${RRED}|${RCYAN}2${RRED}|${RCYAN}3|${RCYAN}4${RRED}|${RCYAN}5]${RWHITE} : " mainChoice
 
-    ## Define the zone information ##
-    zoneContent="zone \"$dname\" {
-    type master;
-    file \"${bindPath}zoneFile/$dname.hosts\";
-    notify-source 212.83.137.218;
-    allow-transfer {91.121.173.158;};
-    notify yes;
-    };"
-
-    case $mainChoice in
-	'1')
-	    addZone
-	    ;;
-	'2')
-	    createZoneDec
-	    createZoneDef
-	    ;;
-	'3')
-	    addSubDomain
-	    ;;
-	*)
-	    echo "${WHITE}Bad argument! Retry${DEFAULT}"
-	    mainMenu
-	    ;;
-    esac
+	case $mainChoice in
+	    '1')
+		domainName
+		addZone
+		quitOrContinue
+		;;
+	    '2')
+		domainName
+		createZoneDec
+		createZoneDef
+		quitOrContinue
+		;;
+	    '3')
+		domainName
+		addSubDomain
+		quitOrContinue
+		;;
+	    '4')
+		listExistingDecFiles
+		quitOrContinue
+		;;
+	    '5')
+		listExistingFiles ${zoneDefPath}
+		quitOrContinue
+		;;
+	    *)
+		echo -e "${RED}Bad argument! Retry${DEFAULT}"
+		;;
+	esac
+    done
 }
 
 #############################
@@ -300,7 +358,7 @@ mainMenu()
 #############################
 ## Check privileges ##
 if [ "$(whoami)" != "root" ]; then
-    echo "${RED}You don't have sufficient privilege to run this script.${DEFAULT}"
+    echo -e "${RED}You don't have sufficient privilege to run this script.${DEFAULT}"
     exit 1
 fi
 
