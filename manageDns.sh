@@ -6,6 +6,7 @@
 bindPath='' # Zone Declaration path file
 zoneDefPath='' # Zone Definition path file
 namedConf='named.conf.'
+zoneDefSuf='.hosts'
 srvIP='' # Main address IP for A field
 primDns='' # Primary DNS server
 secDns='' # Secondary DNS server
@@ -164,12 +165,12 @@ domainName()
     done
 
     ## Set zone definition path ##
-    zoneDefFile=${bindPath}zoneFiles/${dname}.hosts
+    zoneDefFile=${bindPath}zoneFiles/${dname}${zoneDefSuf}
 
     ## Define the zone information ##
     zoneContent="zone \"$dname\" {
     type master;
-    file \"${bindPath}zoneFile/$dname.hosts\";
+    file \"${bindPath}zoneFile/${dname}${zoneDefSuf}\";
     notify-source 212.83.137.218;
     allow-transfer {91.121.173.158;};
     notify yes;
