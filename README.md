@@ -51,7 +51,7 @@ There is no real installation. just few things to edit :
 				and the secondary DNS sever hostname (ns1.domain.fr) you
 				usually use. There are use for default values.
 
-__Do not forget to add execution right **(chmod u+x)** on it!__
+__Do not forget to add execution right *(chmod u+x)* on it!__
 
 ## How it works
 
