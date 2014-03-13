@@ -28,7 +28,7 @@ When you create a zone Definition file the script add some default A field
 like "www", "mail", "smtp",... It is hard codded for now but will change
 in a future release.
 
-You cannot add custom zone field with the script now but in a futur
+You cannot add custom zone field with this script for now but in a next version
 it will be possible.
 
 ## Install
@@ -50,6 +50,9 @@ There is no real installation. just few things to edit :
 			4 - Fill the "primDns" and "secDns" variables with the pimary
 				and the secondary DNS sever hostname (ns1.domain.fr) you
 				usually use. There are use for default values.
+
+All thoses variables are available at the top of the file below the
+"Variables Definition" field _(l.5)_.
 
 __Do not forget to add execution right *(chmod u+x)* on it!__
 
