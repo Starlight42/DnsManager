@@ -43,7 +43,7 @@ RLYELLOW=$'\E[1;93m'
 RCYAN=$'\E[1;36m'
 RLCYAN=$'\E[1;96m'
 
-## Functiona definitiona ##
+## Function definition ##
 # List all the existing zone declaration files #
 listExistingDecFiles()
 {
@@ -105,13 +105,13 @@ addZone()
     echo -e "${WHITE}List of existing zones def files :"
     listExistingDecFiles
     getFileName
-    
+
     ## insert zone declaration in the selected file ##
     echo "" >> $fileZonePath
     echo $zoneContent >> $fileZonePath
-    
+
     ## Split inserted line to look more beautifull ##
-    sed -i -e "/zone \"$dname\"/s/ { / {\n\t/g;/master; file/s/; /;\n\t/g" $fileZonePath	    
+    sed -i -e "/zone \"$dname\"/s/ { / {\n\t/g;/master; file/s/; /;\n\t/g" $fileZonePath
 
     ## Create zone Definition file ##
     createZoneDef
@@ -130,10 +130,10 @@ createZoneDec()
 
     touch $newFileZonePath
     chown bind:bind $newFileZonePath
-    
+
     ## insert zone declaration in the new file ##
     echo $zoneContent > $newFileZonePath
-    
+
     ## Split inserted line to look more beautifull ##
     sed -i -e "/zone \"$dname\"/s/ { / {\n\t/g;/master; file/s/; /;\n\t/g" $newFileZonePath
 
@@ -171,8 +171,8 @@ domainName()
     zoneContent="zone \"$dname\" {
     type master;
     file \"${bindPath}zoneFile/${dname}${zoneDefSuf}\";
-    notify-source 212.83.137.218;
-    allow-transfer {91.121.173.158;};
+    notify-source "${primDns}";
+    allow-transfer {"${secDns}";};
     notify yes;
     };"
 
@@ -212,7 +212,7 @@ createZoneDef()
     defaultSerial=$(date +%Y%m%d)
     # Create the file #
     touch $zoneDefFile
-    
+
     # Question to configure zone file #
     echo -e "${WHITE}Configuration of the zone : ${CYAN}$zoneDefFile${WHITE} :${DEFAULT}"
     read -p "${RWHITE}Enter a ${RCYAN}ttl${RWHITE} : " -e -i 86400 ttl
@@ -231,9 +231,9 @@ createZoneDef()
     echo -e "${WHITE}Compiling all the informations...${DEFAULT}"
     # Cause it's mor funny like this :) #
     sleep 1
-    
+
     # Set zone with good values #
-    zoneDef="\$ttl ${ttl}NL${dname}.TAB1INTAB1SOATAB1${dname}. ${hostmaster} 
+    zoneDef="\$ttl ${ttl}NL${dname}.TAB1INTAB1SOATAB1${dname}. ${hostmaster}
 	(NLTAB3${serial}NLTAB3${refresh}NLTAB3${retry}NLTAB3${expire}NLTAB3${minimum} )NLNL
 	${dname}.TAB1INTAB1NSTAB1${primaryDns}NL
 	${dname}.TAB1INTAB1NSTAB1${secondaryDns}NLNL
@@ -249,7 +249,7 @@ createZoneDef()
 
     # Fill the file with all the information #
     echo $zoneDef > $zoneDefFile
-    
+
     # Cleaning the file to make it syntactically OK #
     sed -i -e 's/NL/\n/g;s/TAB1/\t/g;s/TAB2/\t\t/g;s/TAB3/\t\t\t/g'  $zoneDefFile
 
